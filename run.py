@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+
+# Copyright (C) 2020
+# Robert Engler (rengler33@gmail.com)
+
 import logging
 import os
 
