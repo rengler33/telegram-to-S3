@@ -28,9 +28,14 @@ except ValueError:
 UPLOAD_TO, UPLOAD_FILE = range(2)
 
 
+def _user_info_text(user):
+    return f"{user.first_name} (id: {user.id})"
+
+
 def start(update: Update, context: CallbackContext):
     user = update.message.from_user
-    logger.info(f"{user.first_name} (id: {user.id}) initiated a conversation with '/start'")
+    user_info = _user_info_text(user)
+    logger.info(f"{user_info} initiated a conversation with '/start'")
 
     if user.id in APPROVED_USERS:
         reply_keyboard = [['S3', 'Google Drive']]
@@ -40,15 +45,16 @@ def start(update: Update, context: CallbackContext):
         )
         return UPLOAD_TO
     else:
-        logger.info(f"{user.first_name} (id: {user.id}) found to be not authorized.")
-        update.message.reply_text(f"{user.first_name} (id: {user.id}) is not authorized.")
+        logger.info(f"{user_info} found to be not authorized.")
+        update.message.reply_text(f"{user_info} is not authorized.")
         return
 
 
 def upload_to(update: Update, context: CallbackContext):
     user = update.message.from_user
+    user_info = _user_info_text(user)
     upload_option = update.message.text
-    logger.info(f"{user.first_name} selected upload to {upload_option} option.")
+    logger.info(f"{user_info} selected upload to {upload_option} option.")
     update.message.reply_text(f"I will upload files that you send me to {upload_option}. I'm ready to receive files. " +
                               "\nMake sure to send as -file attachments- so that the images/videos are not compressed.",
                               reply_markup=ReplyKeyboardRemove())
@@ -65,6 +71,7 @@ def upload_file(update: Update, context: CallbackContext):
     :return: state for this same method to allow user to continue uploading files
     """
     user = update.message.from_user
+    user_info = _user_info_text(user)
 
     file = None
     file_name_from_user = ""
@@ -75,17 +82,18 @@ def upload_file(update: Update, context: CallbackContext):
         file_name_from_user = "Video file."  # message does not appear to hold the original file name of a video
         file = update.message.video.get_file()
     elif update.message.photo:
+        logger.info(f"{user_info} attempted to upload a photo without attaching as a file.")
         update.message.reply_text(
             "⚠️ Photo not stored. Please only use the -file attachment- option when sending images, " +
             "otherwise they will be compressed.")
     else:  # With appropriate filters on the MessageHandler this should not happen
         update.message.reply_text("Unsupported file type.")
-        logger.info(f"Unsupported file type uploaded by {user.first_name}: {update.message}. Check filters.")
+        logger.info(f"Unsupported file type uploaded by {user_info}: {update.message}. Check filters.")
         return UPLOAD_FILE
 
     if file:
         downloaded_filename = file.download()
-        logger.info(f"File downloaded from {user.first_name}: {downloaded_filename}")
+        logger.info(f"File downloaded from {user_info}: {downloaded_filename}")
         update.message.reply_text(f'File received.\n{file_name_from_user}', reply_markup=ReplyKeyboardRemove())
 
     return UPLOAD_FILE
@@ -93,7 +101,8 @@ def upload_file(update: Update, context: CallbackContext):
 
 def cancel(update: Update, context: CallbackContext):
     user = update.message.from_user
-    logger.info(f"User {user.first_name} canceled the conversation.")
+    user_info = _user_info_text(user)
+    logger.info(f"User {user_info} canceled the conversation.")
     update.message.reply_text('Finished.', reply_markup=ReplyKeyboardRemove())
 
     return ConversationHandler.END
