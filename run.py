@@ -9,25 +9,34 @@ from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
-
 logger = logging.getLogger(__name__)
 
 load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
+try:
+    APPROVED_USERS = list(map(int, os.getenv("APPROVED_USERS").split(",")))
+    logger.info(f"Approved user list restricted to {APPROVED_USERS}")
+except ValueError:
+    APPROVED_USERS = []
+    logger.info(f"No approved users supplied.")
 
 UPLOAD_TO, UPLOAD_FILE = range(2)
 
 
 def start(update: Update, context: CallbackContext):
     user = update.message.from_user
-    logger.info(f"{user.first_name} initiated a conversation with '/start'")
-    reply_keyboard = [['S3', 'Google Drive']]
-    update.message.reply_text(
-        "Choose a storage service.\nSend /cancel to stop.\n\n",
-        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
-    )
+    logger.info(f"{user.first_name} (id: {user.id}) initiated a conversation with '/start'")
 
-    return UPLOAD_TO
+    if user.id in APPROVED_USERS:
+        reply_keyboard = [['S3', 'Google Drive']]
+        update.message.reply_text(
+            "Choose a storage service.\nSend /cancel to stop.\n\n",
+            reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
+        )
+        return UPLOAD_TO
+    else:
+        update.message.reply_text("Not authorized.")
+        return
 
 
 def upload_to(update: Update, context: CallbackContext):
@@ -35,7 +44,7 @@ def upload_to(update: Update, context: CallbackContext):
     upload_option = update.message.text
     logger.info(f"{user.first_name} selected upload to {upload_option} option.")
     update.message.reply_text(f"I will upload files that you send me to {upload_option}. I'm ready to receive files. " +
-                              "Make sure to send as -file attachments- so that the images/videos are not compressed.",
+                              "\nMake sure to send as -file attachments- so that the images/videos are not compressed.",
                               reply_markup=ReplyKeyboardRemove())
 
     return UPLOAD_FILE
