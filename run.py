@@ -17,7 +17,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 load_dotenv()
-TOKEN = os.getenv("BOT_TOKEN")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 try:
     APPROVED_USERS = list(map(int, os.getenv("APPROVED_USERS").split(",")))
     logger.info(f"Approved user list restricted to {APPROVED_USERS}")
@@ -40,7 +40,8 @@ def start(update: Update, context: CallbackContext):
         )
         return UPLOAD_TO
     else:
-        update.message.reply_text("Not authorized.")
+        logger.info(f"{user.first_name} (id: {user.id}) found to be not authorized.")
+        update.message.reply_text(f"{user.first_name} (id: {user.id}) is not authorized.")
         return
 
 
@@ -105,7 +106,7 @@ def error(update: Update, context: CallbackContext):
 
 
 def main():
-    updater = Updater(TOKEN, use_context=True)
+    updater = Updater(BOT_TOKEN, use_context=True)
 
     dp = updater.dispatcher
 
