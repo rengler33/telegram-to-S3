@@ -1,5 +1,5 @@
-# telegram-to-S3
-Backup photos to cloud storage(s) using a Telegram bot
+# telegram-to-cloud
+Backup photos & videos to cloud storage(s) using a Telegram bot
 
 Currently a basic conversational flow is working for the bot.
 
