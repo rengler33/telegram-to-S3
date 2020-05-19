@@ -17,13 +17,17 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 load_dotenv()
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-try:
-    APPROVED_USERS = list(map(int, os.getenv("APPROVED_USERS").split(",")))
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+if BOT_TOKEN is None:
+    logger.warning(f"No bot token provided. Exiting.")
+    quit()
+
+APPROVED_USER_IDS = os.getenv("APPROVED_USER_IDS")
+if APPROVED_USER_IDS:
+    APPROVED_USERS = list(map(int, APPROVED_USER_IDS.split(",")))
     logger.info(f"Approved user list restricted to {APPROVED_USERS}")
-except ValueError:
-    APPROVED_USERS = []
-    logger.info(f"No approved users supplied.")
+else:
+    logger.info(f"No approved user restrictions supplied. All users will be approved.")
 
 UPLOAD_TO, UPLOAD_FILE = range(2)
 
