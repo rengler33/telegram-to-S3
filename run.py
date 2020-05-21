@@ -7,10 +7,11 @@ import logging
 import os
 
 from dotenv import load_dotenv
-
-from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove, Update)
-from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
+from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove, Update)  # type: ignore
+from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,  # type: ignore
                           ConversationHandler, CallbackContext)
+
+from storages import build_uploader
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -58,6 +59,7 @@ def upload_to(update: Update, context: CallbackContext):
     user = update.message.from_user
     user_info = _user_info_text(user)
     upload_option = update.message.text
+    context.user_data["uploader"] = build_uploader(upload_option)
     logger.info(f"{user_info} selected upload to {upload_option} option.")
     update.message.reply_text(f"I will upload files that you send me to {upload_option}. I'm ready to receive files. " +
                               "\nMake sure to send as -file attachments- so that the images/videos are not compressed.",
@@ -99,6 +101,11 @@ def upload_file(update: Update, context: CallbackContext):
         downloaded_filename = file.download()
         logger.info(f"File downloaded from {user_info}: {downloaded_filename}")
         update.message.reply_text(f'File received.\n{file_name_from_user}', reply_markup=ReplyKeyboardRemove())
+
+        uploader = context.user_data["uploader"]
+        upload = uploader.upload_file(downloaded_filename)
+        if upload:
+            update.message.reply_text(f"File uploaded.")
 
     return UPLOAD_FILE
 
