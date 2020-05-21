@@ -114,7 +114,7 @@ def cancel(update: Update, context: CallbackContext):
     user = update.message.from_user
     user_info = _user_info_text(user)
     logger.info(f"User {user_info} canceled the conversation.")
-    update.message.reply_text('Finished.', reply_markup=ReplyKeyboardRemove())
+    update.message.reply_text('Finished. Reply /start to start again.', reply_markup=ReplyKeyboardRemove())
 
     return ConversationHandler.END
 
