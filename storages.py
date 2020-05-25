@@ -21,6 +21,20 @@ load_dotenv()
 class Uploader(ABC):
 
     @abstractmethod
+    def _load_credentials(self):
+        """
+        Load the credentials into appropriate instance variables
+        """
+        pass
+
+    @abstractmethod
+    def _load_session(self):
+        """
+        Create the session/service object the uploader will use as an instance variable
+        """
+        pass
+
+    @abstractmethod
     def upload_file(self, file_name: str, object_name: str = None) -> bool:
         """
         Upload a file to a storage location
@@ -35,10 +49,17 @@ class Uploader(ABC):
 class AWSUploader(Uploader):
 
     def __init__(self):
-        self.service = 'S3'
+        self.AWS_ACCESS_KEY = None
+        self.AWS_SECRET_ACCESS_KEY = None
+        self._load_credentials()
+        self.session = None
+        self._load_session()
+
+    def _load_credentials(self):
         self.AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY")
         self.AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-        self.BUCKET_NAME = os.getenv("BUCKET_NAME")
+
+    def _load_session(self):
         self.session = boto3.Session(aws_access_key_id=self.AWS_ACCESS_KEY,
                                      aws_secret_access_key=self.AWS_SECRET_ACCESS_KEY)
 
@@ -50,7 +71,7 @@ class AWSUploader(Uploader):
         if object_name is None:
             object_name = file_name
 
-        bucket = self.BUCKET_NAME
+        bucket = os.getenv("BUCKET_NAME")
 
         try:
             response = s3.upload_file(file_name, bucket, object_name)
