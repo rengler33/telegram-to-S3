@@ -43,7 +43,7 @@ def start(update: Update, context: CallbackContext):
     logger.info(f"{user_info} initiated a conversation with '/start'")
 
     if user.id in APPROVED_USERS:
-        reply_keyboard = [['S3', 'Google Drive']]
+        reply_keyboard = [['S3', 'GDrive']]
         update.message.reply_text(
             "Choose a storage service.\nSend /cancel to stop.\n\n",
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
@@ -134,7 +134,7 @@ def main():
         entry_points=[CommandHandler('start', start)],
 
         states={
-            UPLOAD_TO: [MessageHandler(Filters.regex('^(S3|Google Drive)$'), upload_to)],
+            UPLOAD_TO: [MessageHandler(Filters.regex('^(S3|GDrive)$'), upload_to)],
             UPLOAD_FILE: [MessageHandler(Filters.document.image | Filters.video | Filters.photo, upload_file)],
         },
 
