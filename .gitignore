@@ -130,3 +130,9 @@ dmypy.json
 
 # Pycharm
 .idea/
+
+# Credentials
+.gdrivecredentials.json
+.gdrivetoken.pickle
+*credentials.json
+*token.pickle
